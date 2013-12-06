@@ -38,14 +38,22 @@ public class Parser {
                 break;
             case 5:
                 GUI.Result.setText("Деление на ноль");
+                break;
             case 6:
                 GUI.Result.setText("Неверный формат функции");
                 GUI.Inp.requestFocusInWindow();
                 GUI.Inp.setCaretPosition(Posoferr);
+                break;
             case 7:
                 GUI.Result.setText("Нельзя извлекать квадратный корень из отрицательного числа");
                 GUI.Inp.requestFocusInWindow();
                 GUI.Inp.setCaretPosition(Posoferr);
+                break;
+            case 8:
+                GUI.Result.setText("Неизвестная функция");
+                GUI.Inp.requestFocusInWindow();
+                GUI.Inp.setCaretPosition(Posoferr);
+                break;
                 default:
                     GUI.Result.setText("Неизвестная ошибка");
         }
@@ -118,29 +126,50 @@ public class Parser {
                 && Character.isLetter(Inpu.charAt(i))) {
             operand += Inpu.charAt(i++);
         }
+        if(i<=Inpu.length()-1)
+        {
         if (Inpu.charAt(i++) != '(') {
             Typeoferr = 6;
             Posoferr = i;
         } else {
-            if (!Character.isDigit(Inpu.charAt(i)) && Inpu.charAt(i) != '-') {
+            if(i<=Inpu.length()-1)
+            {
+            if (!Character.isDigit(Inpu.charAt(i)) && Inpu.charAt(i) != '-' ) {
                 Typeoferr = 6;
                 Posoferr = i;
             } else {
                 if (operand.equals("sqrt")) {
                     Res = Fsqrt();
-                }
-                if (operand.equals("max") || operand.equals("min")) {
+                } else if (operand.equals("max") || operand.equals("min")) {
                     Res = Fminormax(operand);
-                }
-                if (operand.equals("sum")) {
+                } else if (operand.equals("sum")) {
                     Res = Fsum();
+                } else
+                {
+                    Typeoferr=8;
+                    Posoferr=i-operand.length();
+                    Res=0;
                 }
             }
             if (Inpu.charAt(i) != ')' && Typeoferr == 0) {
                 Typeoferr = 6;
                 Posoferr = i;
             }
+            }
+            else
+            {
+                Typeoferr=6;
+                Posoferr=i;
+            }
         }
+        }
+        else
+        {
+            Typeoferr=6;
+            Posoferr=i;
+        }
+        i++;
+
         return Res;
     }
 
@@ -181,7 +210,6 @@ public class Parser {
     }
 
     private static int priority(char op) {
-
         switch (op) {
             case '+':
             case '-':
@@ -225,6 +253,9 @@ public class Parser {
 
     public static void eval(String s) {
         Inpu = s;
+        Typeoferr=0;
+        Posoferr=0;
+        Numbofbr=0;
         LinkedList<Double> st = new LinkedList<Double>();
         LinkedList<Character> op = new LinkedList<Character>();
         for (i = 0; i < Inpu.length(); i++) {
@@ -291,13 +322,21 @@ public class Parser {
         }
         while (!op.isEmpty() && Typeoferr == 0)
             processOperator(st, op.removeLast());
+        if (Typeoferr==0 && !st.isEmpty())
         if (st.getFirst().isInfinite()) {
             Typeoferr = 5;
         }
+        if(!st.isEmpty())
+        {
         if (Typeoferr == 0) {
             GUI.Result.setText(st.get(0).toString());
         } else {
             Error_info();
+        }
+        }
+        else
+        {
+            GUI.Result.setText("Нет выражения");
         }
     }
 }
