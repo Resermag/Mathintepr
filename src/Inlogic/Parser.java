@@ -54,6 +54,16 @@ public class Parser {
                 GUI.Inp.requestFocusInWindow();
                 GUI.Inp.setCaretPosition(Posoferr);
                 break;
+            case 9:
+                GUI.Result.setText("Нужен оператор");
+                GUI.Inp.requestFocusInWindow();
+                GUI.Inp.setCaretPosition(Posoferr);
+                break;
+            case 10:
+                GUI.Result.setText("Больше точек, чем нужно");
+                GUI.Inp.requestFocusInWindow();
+                GUI.Inp.setCaretPosition(Posoferr);
+                break;
                 default:
                     GUI.Result.setText("Неизвестная ошибка");
         }
@@ -147,7 +157,7 @@ public class Parser {
                 } else
                 {
                     Typeoferr=8;
-                    Posoferr=i-operand.length();
+                    Posoferr=i-operand.length()-1;
                     Res=0;
                 }
             }
@@ -168,7 +178,6 @@ public class Parser {
             Typeoferr=6;
             Posoferr=i;
         }
-        i++;
 
         return Res;
     }
@@ -180,10 +189,20 @@ public class Parser {
             if (Inpu.charAt(i) == '.') {
                 Numbofpoint++;
             }
+            if (Numbofpoint<=1)
             operand += Inpu.charAt(i++);
+            else
+            {
+                Typeoferr=10;
+                Posoferr=i;
+                break;
+            }
         }
         --i;
+        if (Typeoferr==0)
         return Double.parseDouble(operand);
+        else
+            return 0;
     }
 
     private static double Parsdoub(String In) {
@@ -259,6 +278,8 @@ public class Parser {
         LinkedList<Double> st = new LinkedList<Double>();
         LinkedList<Character> op = new LinkedList<Character>();
         for (i = 0; i < Inpu.length(); i++) {
+            if (Typeoferr!=0)
+                break;
             Numbofpoint = 0;
             char c = Inpu.charAt(i);
             if (isDelim(c) && Typeoferr == 0)
@@ -268,6 +289,12 @@ public class Parser {
                 continue;
             }
             if (c == '(' && Typeoferr == 0) {
+                if (i>0)
+                if (Character.isDigit(Inpu.charAt(i-1)))
+                {
+                    Typeoferr=9;
+                    Posoferr=i;
+                }
                 op.add('(');
                 Numbofbr++;
             } else if (c == ')') {
@@ -281,7 +308,7 @@ public class Parser {
                     processOperator(st, op.removeLast());
                 op.removeLast();
             } else if (isOperator(c)) {
-                if (i == 0 && c != '-') {
+                if ((i == 0 || Inpu.charAt(i-1)=='(') && c != '-' ) {
                     Typeoferr = 4;
                     Posoferr = i;
                     break;
@@ -299,7 +326,7 @@ public class Parser {
                     op.add(c);
                 } else {
                     if (i == 0 || Inpu.charAt(i - 1) == '(') {
-                        if (isOperator(Inpu.charAt(i + 1))) {
+                        if (isOperator(Inpu.charAt(i + 1)) || (Inpu.charAt(i+1)=='(')) {
                             Typeoferr = 3;
                             Posoferr = i;
                             break;
@@ -314,10 +341,18 @@ public class Parser {
                     }
                 }
             } else {
+                if (i>0)
+                if (!isOperator(Inpu.charAt(i-1)))
+                if (Inpu.charAt(i-1)!='(')
+                {
+                    Typeoferr=9;
+                    Posoferr=i;
+                }
+                if(Typeoferr==0)
                 st.add(Parsdoub());
             }
         }
-        if (Numbofbr > 0) {
+        if (Numbofbr > 0 && Typeoferr==0) {
             Typeoferr = 2;
         }
         while (!op.isEmpty() && Typeoferr == 0)
@@ -326,15 +361,12 @@ public class Parser {
         if (st.getFirst().isInfinite()) {
             Typeoferr = 5;
         }
-        if(!st.isEmpty())
+        if(!st.isEmpty() && Typeoferr == 0 )
         {
-        if (Typeoferr == 0) {
             GUI.Result.setText(st.get(0).toString());
-        } else {
+        } else if (Typeoferr!=0){
             Error_info();
-        }
-        }
-        else
+        } else if (!st.isEmpty())
         {
             GUI.Result.setText("Нет выражения");
         }

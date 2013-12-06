@@ -12,7 +12,7 @@ public class GUI {
 
     static JTextField Inp = new JTextField();
     private static JFrame Main = new JFrame("Калькулятор");
-    static JLabel Info = new JLabel("Введите математическое выражение");
+    static JLabel Info = new JLabel("Введите выражение без переменных");
     private static JButton Run = new JButton("Вычислить");
     static JLabel Result = new JLabel("");
 
